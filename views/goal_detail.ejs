@@ -1,0 +1,289 @@
+<%- include('partials/header') %>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/kids">Kid Manager</a></li>
+    <li class="breadcrumb-item"><a href="/kids/<%= goal.kid_id %>"><%= goal.kid_name %></a></li>
+    <li class="breadcrumb-item active" aria-current="page"><%= goal.name %></li>
+  </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><%= goal.name %></h1>
+  <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMeasurementModal">
+    <i class="bi bi-plus"></i> Record Measurement
+  </button>
+</div>
+
+<div class="row">
+  <div class="col-md-6 mb-4">
+    <div class="card h-100">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Goal Information</h5>
+      </div>
+      <div class="card-body">
+        <% if (goal.description) { %>
+          <p><strong>Description:</strong> <%= goal.description %></p>
+        <% } %>
+        
+        <div class="row mb-3">
+          <div class="col-6">
+            <p><strong>Baseline:</strong> <%= goal.baseline_value %>%</p>
+            <% if (goal.baseline_date) { %>
+              <p><strong>Baseline Date:</strong> <%= new Date(goal.baseline_date).toLocaleDateString() %></p>
+            <% } %>
+          </div>
+          <div class="col-6">
+            <p><strong>Target:</strong> <%= goal.target_value %>%</p>
+            <% if (goal.target_date) { %>
+              <p><strong>Target Date:</strong> <%= new Date(goal.target_date).toLocaleDateString() %></p>
+              <% 
+              const today = new Date();
+              const targetDate = new Date(goal.target_date);
+              const daysRemaining = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
+              %>
+              <% if (daysRemaining > 0) { %>
+                <p><strong>Days Remaining:</strong> <%= daysRemaining %></p>
+              <% } else { %>
+                <p><strong>Status:</strong> <span class="badge bg-warning">Target Date Passed</span></p>
+              <% } %>
+            <% } %>
+          </div>
+        </div>
+        
+        <h6>Dependence Level Scale:</h6>
+        <div class="progress" style="height: 30px;">
+          <div class="progress-bar" role="progressbar" 
+            style="width: 25%;" 
+            aria-valuenow="25" 
+            aria-valuemin="0" 
+            aria-valuemax="100">
+            Max Assist (25%)
+          </div>
+          <div class="progress-bar bg-info" role="progressbar" 
+            style="width: 25%;" 
+            aria-valuenow="50" 
+            aria-valuemin="0" 
+            aria-valuemax="100">
+            Mod Assist (50%)
+          </div>
+          <div class="progress-bar bg-success" role="progressbar" 
+            style="width: 25%;" 
+            aria-valuenow="75" 
+            aria-valuemin="0" 
+            aria-valuemax="100">
+            Min Assist (75%)
+          </div>
+          <div class="progress-bar bg-warning" role="progressbar" 
+            style="width: 25%;" 
+            aria-valuenow="100" 
+            aria-valuemin="0" 
+            aria-valuemax="100">
+            Independent (100%)
+          </div>
+        </div>
+        <div class="d-flex justify-content-between mt-1">
+          <small>0% Dependent</small>
+          <small>25% Max Assist</small>
+          <small>50% Mod Assist</small>
+          <small>75% Min Assist</small>
+          <small>100% Independent</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 mb-4">
+    <div class="card h-100">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Progress Chart</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="progressChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="card-title mb-0">Measurement History</h5>
+  </div>
+  <div class="card-body">
+    <% if (measurements && measurements.length > 0) { %>
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Value</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% measurements.forEach(measurement => { %>
+              <tr>
+                <td><%= new Date(measurement.measured_at).toLocaleString() %></td>
+                <td>
+                  <div class="progress" style="height: 20px;">
+                    <div class="progress-bar 
+                      <%= measurement.value < 25 ? '' : 
+                         measurement.value < 50 ? 'bg-info' : 
+                         measurement.value < 75 ? 'bg-success' : 'bg-warning' %>" 
+                      role="progressbar" 
+                      style="width: <%= measurement.value %>%" 
+                      aria-valuenow="<%= measurement.value %>" 
+                      aria-valuemin="0" 
+                      aria-valuemax="100">
+                      <%= measurement.value %>%
+                    </div>
+                  </div>
+                </td>
+                <td><%= measurement.description || 'No notes' %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="alert alert-info">
+        No measurements recorded yet. Click "Record Measurement" to add the first measurement.
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Add Measurement Modal -->
+<div class="modal fade" id="addMeasurementModal" tabindex="-1" aria-labelledby="addMeasurementModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addMeasurementModalLabel">Record New Measurement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="/measurements" method="POST">
+          <input type="hidden" name="goalId" value="<%= goal.id %>">
+          
+          <div class="mb-3">
+            <label class="form-label">Current Value on Dependence Level Scale</label>
+            <input type="range" class="form-range" id="measurementValue" name="value" min="0" max="100" step="5" value="0" oninput="updateMeasurementValue(this.value)">
+            <div class="d-flex justify-content-between">
+              <small>0% - Dependent</small>
+              <small>25% - Max Assist</small>
+              <small>50% - Mod Assist</small>
+              <small>75% - Min Assist</small>
+              <small>100% - Independent</small>
+            </div>
+            <div class="text-center my-3">
+              <span id="measurementValueDisplay" class="badge bg-primary">0%</span>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="description" class="form-label">Notes</label>
+            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Enter any observations or notes about this measurement"></textarea>
+          </div>
+          
+          <div class="text-end">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Measurement</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function updateMeasurementValue(value) {
+    const displayElement = document.getElementById('measurementValueDisplay');
+    displayElement.textContent = value + '%';
+    
+    // Change color based on value
+    if (value < 25) {
+      displayElement.className = 'badge bg-danger';
+    } else if (value < 50) {
+      displayElement.className = 'badge bg-info';
+    } else if (value < 75) {
+      displayElement.className = 'badge bg-success';
+    } else {
+      displayElement.className = 'badge bg-warning';
+    }
+  }
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    // Fetch measurement data for the chart
+    fetch('/api/goals/<%= goal.id %>/measurements')
+      .then(response => response.json())
+      .then(data => {
+        const labels = data.map(m => new Date(m.measured_at).toLocaleDateString());
+        const values = data.map(m => m.value);
+        
+        // Add baseline as first point if no measurements yet
+        if (data.length === 0) {
+          labels.push(new Date('<%= goal.baseline_date %>').toLocaleDateString() || 'Baseline');
+          values.push(<%= goal.baseline_value %>);
+        }
+        
+        // Create the chart
+        const ctx = document.getElementById('progressChart').getContext('2d');
+        const progressChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Progress',
+              data: values,
+              backgroundColor: 'rgba(54, 162, 235, 0.2)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 2,
+              tension: 0.3,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 100,
+                title: {
+                  display: true,
+                  text: 'Independence Level (%)'
+                }
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: 'Date'
+                }
+              }
+            },
+            plugins: {
+              annotation: {
+                annotations: {
+                  line1: {
+                    type: 'line',
+                    yMin: <%= goal.target_value %>,
+                    yMax: <%= goal.target_value %>,
+                    borderColor: 'rgb(75, 192, 192)',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    label: {
+                      enabled: true,
+                      content: 'Target: <%= goal.target_value %>%'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        });
+      })
+      .catch(error => console.error('Error loading chart data:', error));
+  });
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,91 @@
+<%- include('partials/header') %>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/kids">Kid Manager</a></li>
+    <li class="breadcrumb-item active" aria-current="page"><%= kid.name %></li>
+  </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><%= kid.name %>'s Goals</h1>
+  <a href="/kids/<%= kid.id %>/goals/new" class="btn btn-primary">
+    <i class="bi bi-plus"></i> Add Goal
+  </a>
+</div>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title">Client Information</h5>
+    <div class="row">
+      <div class="col-md-6">
+        <p><strong>Name:</strong> <%= kid.name %></p>
+        <% if (kid.age) { %>
+          <p><strong>Age:</strong> <%= kid.age %></p>
+        <% } %>
+      </div>
+      <div class="col-md-6">
+        <% if (kid.notes) { %>
+          <p><strong>Notes:</strong></p>
+          <p><%= kid.notes %></p>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2 class="mb-3">Treatment Goals</h2>
+
+<% if (goals && goals.length > 0) { %>
+  <div class="row">
+    <% goals.forEach(goal => { %>
+      <div class="col-md-6 mb-4">
+        <div class="card h-100">
+          <div class="card-header">
+            <h5 class="card-title mb-0"><%= goal.name %></h5>
+          </div>
+          <div class="card-body">
+            <% if (goal.description) { %>
+              <p class="card-text"><%= goal.description %></p>
+            <% } %>
+            
+            <div class="d-flex justify-content-between mb-3">
+              <div>
+                <span class="badge bg-info">Baseline: <%= goal.baseline_value %>%</span>
+                <% if (goal.baseline_date) { %>
+                  <small class="text-muted d-block"><%= new Date(goal.baseline_date).toLocaleDateString() %></small>
+                <% } %>
+              </div>
+              <div class="text-end">
+                <span class="badge bg-success">Target: <%= goal.target_value %>%</span>
+                <% if (goal.target_date) { %>
+                  <small class="text-muted d-block"><%= new Date(goal.target_date).toLocaleDateString() %></small>
+                <% } %>
+              </div>
+            </div>
+            
+            <div class="progress mb-3" style="height: 25px;">
+              <div class="progress-bar" role="progressbar" 
+                style="width: <%= goal.baseline_value %>%;" 
+                aria-valuenow="<%= goal.baseline_value %>" 
+                aria-valuemin="0" 
+                aria-valuemax="100">
+                <%= goal.baseline_value %>%
+              </div>
+            </div>
+            
+            <div class="text-end">
+              <a href="/goals/<%= goal.id %>" class="btn btn-primary">View Details</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+<% } else { %>
+  <div class="alert alert-info">
+    No goals set yet. Click "Add Goal" to create a goal for <%= kid.name %>.
+  </div>
+<% } %>
+
+<%- include('partials/footer') %>

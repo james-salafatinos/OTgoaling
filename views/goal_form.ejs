@@ -1,0 +1,99 @@
+<%- include('partials/header') %>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/kids">Kid Manager</a></li>
+    <li class="breadcrumb-item"><a href="/kids/<%= kid.id %>"><%= kid.name %></a></li>
+    <li class="breadcrumb-item active" aria-current="page">New Goal</li>
+  </ol>
+</nav>
+
+<h1 class="mb-4">Create New Goal for <%= kid.name %></h1>
+
+<div class="card">
+  <div class="card-body">
+    <form action="/goals" method="POST">
+      <input type="hidden" name="kidId" value="<%= kid.id %>">
+      
+      <div class="mb-3">
+        <label for="name" class="form-label">Goal Name</label>
+        <input type="text" class="form-control" id="name" name="name" required>
+      </div>
+      
+      <div class="mb-3">
+        <label for="description" class="form-label">Goal Description</label>
+        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+      </div>
+      
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Current Baseline</label>
+          <div class="input-group mb-2">
+            <input type="range" class="form-range" id="baselineValue" name="baselineValue" min="0" max="100" step="5" value="0" oninput="updateBaselineValue(this.value)">
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <small>0% - Dependent</small>
+            <small>25% - Max Assist</small>
+            <small>50% - Mod Assist</small>
+            <small>75% - Min Assist</small>
+            <small>100% - Independent</small>
+          </div>
+          <div class="text-center mb-3">
+            <span id="baselineValueDisplay" class="badge bg-primary">0%</span>
+          </div>
+          <div class="mb-3">
+            <label for="baselineDate" class="form-label">Baseline Date</label>
+            <input type="date" class="form-control" id="baselineDate" name="baselineDate" value="<%= new Date().toISOString().split('T')[0] %>" required>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <label class="form-label">Target Goal</label>
+          <div class="input-group mb-2">
+            <input type="range" class="form-range" id="targetValue" name="targetValue" min="0" max="100" step="5" value="100" oninput="updateTargetValue(this.value)">
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <small>0% - Dependent</small>
+            <small>25% - Max Assist</small>
+            <small>50% - Mod Assist</small>
+            <small>75% - Min Assist</small>
+            <small>100% - Independent</small>
+          </div>
+          <div class="text-center mb-3">
+            <span id="targetValueDisplay" class="badge bg-success">100%</span>
+          </div>
+          <div class="mb-3">
+            <label for="targetDate" class="form-label">Target Date</label>
+            <input type="date" class="form-control" id="targetDate" name="targetDate" required>
+          </div>
+        </div>
+      </div>
+      
+      <div class="text-end">
+        <a href="/kids/<%= kid.id %>" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Create Goal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function updateBaselineValue(value) {
+    document.getElementById('baselineValueDisplay').textContent = value + '%';
+  }
+  
+  function updateTargetValue(value) {
+    document.getElementById('targetValueDisplay').textContent = value + '%';
+  }
+  
+  // Set default target date (3 months from now)
+  document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const threeMonthsLater = new Date();
+    threeMonthsLater.setMonth(today.getMonth() + 3);
+    
+    document.getElementById('targetDate').valueAsDate = threeMonthsLater;
+  });
+</script>
+
+<%- include('partials/footer') %>

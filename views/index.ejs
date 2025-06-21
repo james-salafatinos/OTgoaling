@@ -1,0 +1,43 @@
+<%- include('partials/header') %>
+
+<div class="jumbotron">
+    <h1 class="display-4">Welcome to OT Goaling</h1>
+    <p class="lead">A tool for occupational therapists to track client goals and progress.</p>
+    <hr class="my-4">
+    <p>Manage your case load, set goals, and track progress over time with our easy-to-use interface.</p>
+    <p class="lead">
+        <a class="btn btn-primary btn-lg" href="/kids" role="button">View Case Load</a>
+    </p>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Kid Manager</h5>
+                <p class="card-text">Add and manage children in your case load.</p>
+                <a href="/kids" class="btn btn-outline-primary">Go to Kid Manager</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Goal Setting</h5>
+                <p class="card-text">Create and track therapeutic goals for your clients.</p>
+                <a href="/kids" class="btn btn-outline-primary">Set Goals</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Progress Tracking</h5>
+                <p class="card-text">Record and visualize progress toward therapeutic goals.</p>
+                <a href="/kids" class="btn btn-outline-primary">Track Progress</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
